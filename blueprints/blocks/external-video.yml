@@ -1,0 +1,21 @@
+title: External Video
+type: external_video
+icon: video
+
+fields:
+  url:
+    label: Video-URL
+    type: url
+  instructions:
+    label: Instructions
+    type: info
+    text: |
+      Generating a poster images only works for direct links to externally hosted videos, if the hosts CORS policy allows it. Embeds from YouTube, Vimeo, etc. are not supported.
+  poster:
+    type: files
+    multiple: false
+    layout: cards
+    size: full
+    image:
+      back: black
+      ratio: 16/9

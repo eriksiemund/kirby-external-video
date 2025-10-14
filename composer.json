@@ -1,0 +1,12 @@
+{
+    "name": "eriksiemund/external-video",
+    "description": "Add external video url and automatically/manually generate video poster",
+    "homepage": "https://eriksiemund.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Erik Siemund",
+            "email": "mail@eriksiemund.com"
+        }
+    ]
+}
