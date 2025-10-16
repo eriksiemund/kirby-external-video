@@ -1,6 +1,7 @@
 {
     "name": "eriksiemund/external-video",
     "description": "Add external video url and automatically/manually generate video poster",
+    "type": "kirby-plugin",
     "homepage": "https://eriksiemund.com",
     "license": "MIT",
     "authors": [
@@ -8,5 +9,11 @@
             "name": "Erik Siemund",
             "email": "mail@eriksiemund.com"
         }
-    ]
+    ],
+    "require": {
+        "getkirby/composer-installer": "^1.1"
+    },
+    "extra": {
+      "installer-name": "generate-video-poster"
+    }
 }
