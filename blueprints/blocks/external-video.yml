@@ -6,6 +6,18 @@ fields:
   url:
     label: Video-URL
     type: url
+  autoplay:
+    type: toggle
+    width: 1/4
+    default: true
+  loop:
+    type: toggle
+    width: 1/4
+    default: true
+  controls:
+    type: toggle
+    width: 1/4
+    default: true
   instructions:
     label: Instructions
     type: info

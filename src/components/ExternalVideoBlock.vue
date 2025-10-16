@@ -85,7 +85,7 @@ export default {
                         return `${seconds}_${hundredthsPadded}`
                     }
                     
-                    const posterFilename = this.id + '_' + formatCurrentTime(video.currentTime) + Date.now() + '.png'
+                    const posterFilename = this.id + '_' + formatCurrentTime(video.currentTime) + Date.now() + '.jpeg'
                     
                     const formData = new FormData();
                     formData.append('pageId', this.pageId)
@@ -112,7 +112,7 @@ export default {
                     canvas.height = 0
                 }
                 
-            }, 'image/png')
+            }, 'image/jpeg', 0.8)
         }
     },
     mounted() {
@@ -129,8 +129,15 @@ export default {
     
     .es-external-video-block {
         display: grid;
-        grid-template-columns: 1fr 1fr;
         gap: var(--spacing-3);
+
+        @container (min-width: 600px) {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        @container (max-width: 599px) {
+            grid-template-columns: 1fr;
+        }
     }
     
     .es-external-video-poster-wrapper {
@@ -161,6 +168,12 @@ export default {
     .k-file-preview-frame :where(img,audio,video) {
         width: 100%;
         height: auto;
+    }
+
+    .k-block-figure {
+        @container (max-width: 599px) {
+            display: none;
+        }
     }
     
     .k-image-frame {
