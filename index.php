@@ -1,6 +1,6 @@
 <?php
 
-Kirby::plugin('gemini-services/external-video', [
+Kirby::plugin('eriksiemund/external-video', [
     'blueprints' => [
         'blocks/external_video' => __DIR__ . '/blueprints/blocks/external-video.yml'
     ],

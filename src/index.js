@@ -1,6 +1,6 @@
 import ExternalVideoBlock from "./components/ExternalVideoBlock.vue"
 
-panel.plugin("gemini-services/external-video", {
+panel.plugin("eriksiemund/external-video", {
     blocks: {
         external_video: ExternalVideoBlock
     }

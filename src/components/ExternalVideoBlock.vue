@@ -1,14 +1,14 @@
 <template>
-    <div class="gs-external-video-block">
+    <div class="es-external-video-block">
         <k-video-file-preview
             :details="details"
             :url="content.url"
             class="k-file-preview"
         />
 
-        <div class="gs-external-video-poster-wrapper">
+        <div class="es-external-video-poster-wrapper">
             <k-button
-            class="gs-generate-video-poster-button"
+            class="es-generate-video-poster-button"
             v-bind="$props"
             icon="image"
             variant="filled"
@@ -127,13 +127,13 @@ export default {
 <style>
 .k-block-container {
     
-    .gs-external-video-block {
+    .es-external-video-block {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: var(--spacing-3);
     }
     
-    .gs-external-video-poster-wrapper {
+    .es-external-video-poster-wrapper {
         display: flex;
         flex-direction: column;
         justify-content: start;
@@ -174,7 +174,7 @@ export default {
         max-width: 240px;
     }
     
-    .gs-generate-video-poster-button {
+    .es-generate-video-poster-button {
         max-width: 240px;
         width: 100%;
     }
