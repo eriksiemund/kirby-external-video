@@ -11,14 +11,13 @@ $hasControls =
     $block->controls()->isNotEmpty() 
     ? $block->controls()->isTrue()
     : false;
-$hasPoster = $block->poster()->isNotEmpty();
+$hasPoster = $block->poster()->isNotEmpty() && $block->poster()->first()->toFile() !== null;
 $poster =
     $hasPoster
     ? $block->poster()->first()->toFile()
     : null;
 $posterUrl = $hasPoster ? $poster->url() : '';
 ?>
-
 
 <video
     src="<?= $block->url() ?>"
