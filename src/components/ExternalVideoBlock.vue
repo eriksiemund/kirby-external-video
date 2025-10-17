@@ -27,10 +27,8 @@
                 </k-block-figure>
             </div>
         </div>
-        <div class="es-external-video-container" :class="{ 'is-hidden': content.url }">
-            <div class="es-warning">
-                <p>External Video URL missing.</p>
-            </div>
+        <div class="es-warning" :class="{ 'is-hidden': content.url }">
+            <p>External Video URL missing.</p>
         </div>
     </div>
 </template>
@@ -136,20 +134,20 @@ export default {
 .k-block-container {
     
     .es-external-video-block {
+        container-type: inline-size;
+    }
+    
+    .es-external-video-container {
         display: grid;
         gap: var(--spacing-3);
-
+    
         @container (min-width: 600px) {
             grid-template-columns: 1fr 1fr;
         }
-
+    
         @container (max-width: 599px) {
             grid-template-columns: 1fr;
         }
-    }
-
-    .es-external-video-container {
-        display: contents;
 
         &.is-hidden {
             display: none;
@@ -213,6 +211,10 @@ export default {
         background-color: var(--color-yellow-300);
         color: var(--color-yellow-950);
         border-radius: var(--button-rounded);
+
+        &.is-hidden {
+            display: none;
+        }
     }
 
 }
