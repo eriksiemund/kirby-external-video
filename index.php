@@ -24,6 +24,7 @@ Kirby::plugin('eriksiemund/external-video', [
                 }
                 
                 $blockId = get('blockId');
+                $videoUrl = get('videoUrl');
 
                 $posterFile = $_FILES['posterFile'] ?? null;                
                 if (!$posterFile || $posterFile['error'] !== UPLOAD_ERR_OK) {
@@ -63,65 +64,67 @@ Kirby::plugin('eriksiemund/external-video', [
                         return true;
                     };
 
-                    $updateNestedBlocksArray = function (array $blocksArray, string $targetId, $posterId, string $videoUrl) use (&$updateNestedBlocksArray, $isArrayBlocks): array {
-                        $result = [];
+                    $updateBlocks = function (
+                        array $blocks,
+                        string $blockId,
+                        string $posterId,
+                        string $videoUrl
+                        ) use (&$updateBlocks, $isArrayBlocks): array {
+                        $blocksNew = [];
 
-                        foreach ($blocksArray as $blockArray) {
-                            $newBlock = $blockArray;
-                            $content = is_array($blockArray['content'] ?? null) ? $blockArray['content'] : [];
+                        foreach ($blocks as $block) {
+                            $blockNew = $block;
+                            $content = is_array($block['content'] ?? null) ? $block['content'] : [];
 
-                            if (($blockArray['id'] ?? null) === $targetId) {
+                            if (($block['id'] ?? null) === $blockId) {
                                 $content = array_merge($content, [
                                     'poster' => $posterId,
                                     'url'    => $videoUrl
                                 ]);
-                                $newBlock['content'] = $content;
+                                $blockNew['content'] = $content;
                             }
 
                             foreach ($content as $key => $value) {
                                 // case: value is an array that looks like blocks
                                 if ($isArrayBlocks($value)) {
-                                    $content[$key] = $updateNestedBlocksArray($value, $targetId, $posterId, $videoUrl);
-                                    $newBlock['content'] = $content;
+                                    $content[$key] = $updateBlocks($value, $blockId, $posterId, $videoUrl);
+                                    $blockNew['content'] = $content;
                                     continue;
                                 }
-
                                 // case: value is a string that may contain JSON array of blocks
                                 if (is_string($value)) {
-                                    $decoded = json_decode($value, true);
-                                    if (json_last_error() === JSON_ERROR_NONE && $isArrayBlocks($decoded)) {
-                                        $updatedNested = $updateNestedBlocksArray($decoded, $targetId, $posterId, $videoUrl);
-                                        $content[$key] = json_encode($updatedNested);
-                                        $newBlock['content'] = $content;
+                                    $valueDecoded = json_decode($value, true);
+                                    if (json_last_error() === JSON_ERROR_NONE && $isArrayBlocks($valueDecoded)) {
+                                        $blocksNested = $updateBlocks(
+                                            $valueDecoded,
+                                            $blockId,
+                                            $posterId,
+                                            $videoUrl
+                                        );
+                                        $content[$key] = json_encode($blocksNested);
+                                        $blockNew['content'] = $content;
                                         continue;
                                     }
                                 }
                             }
 
-                            $result[] = $newBlock;
+                            $blocksNew[] = $blockNew;
                         }
 
-                        return $result;
+                        return $blocksNew;
                     };
 
-                    $blocksArray = $page->{$fieldName}()->toBlocks()->toArray();
+                    $blocksOld = $page->{$fieldName}()->toBlocks()->toArray();
 
-                    $updatedArray = $updateNestedBlocksArray(
-                        $blocksArray,
+                    $blocksNew = $updateBlocks(
+                        $blocksOld,
                         $blockId,
                         $posterFileUploaded->id(),
-                        get('videoUrl')
+                        $videoUrl
                     );
 
-                    $newBlocks = [];
-                    foreach ($updatedArray as $b) {
-                        $newBlocks[] = new Kirby\Cms\Block($b);
-                    }
-
-                    $blocksNew = new Kirby\Cms\Blocks($newBlocks);
-
                     $page->update([
-                        $fieldName => $blocksNew->toArray()
+                        $fieldName => $blocksNew
                     ]);
 
                     return [
