@@ -23,6 +23,13 @@ fields:
     type: info
     text: |
       Generating a poster images only works for direct links to externally hosted videos, if the hosts CORS policy allows it. Embeds from YouTube, Vimeo, etc. are not supported.
+
+      Supported Patterns:
+      https://player.vimeo.com/progressive_redirect/...
+
+      Unsupported Patterns:
+      https://vimeo.com/123456789
+      https://youtu.be/123456789
   poster:
     type: files
     multiple: false
