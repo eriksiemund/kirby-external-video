@@ -39,7 +39,9 @@ export default {
     },
     computed: {
         pageId() {
-            return this.endpoints.model.replace(/^\/pages\//, '')
+            return this.endpoints.model
+                .replace(/^\/pages\//, '')
+                .replace(/\+/g, '/')
         },
         blockId() {
             return this.id
