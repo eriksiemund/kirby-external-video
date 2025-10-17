@@ -1,28 +1,36 @@
 <template>
     <div class="es-external-video-block">
-        <k-video-file-preview
-            :details="details"
-            :url="content.url"
-            class="k-file-preview"
-        />
-
-        <div class="es-external-video-poster-wrapper">
-            <k-button
-            class="es-generate-video-poster-button"
-            v-bind="$props"
-            icon="image"
-            variant="filled"
-            @click="handleGenerateVideoPoster"
-            >Generate Video Poster</k-button>
+        <div class="es-external-video-container" :class="{ 'is-hidden': !content.url }">
+            <k-video-file-preview
+                :details="details"
+                :url="content.url"
+                class="k-file-preview"
+                :video-attrs="{ crossOrigin: 'anonymous' }"
+            />
     
-            <k-block-figure>
-                <k-image-frame
-                    :cover="false"
-                    back="black"
-                    :ratio="1/1"
-                    :src="content.poster[0]?.url"
-                />
-            </k-block-figure>
+            <div class="es-external-video-poster-wrapper">
+                <k-button
+                class="es-generate-video-poster-button"
+                v-bind="$props"
+                icon="image"
+                variant="filled"
+                @click="handleGenerateVideoPoster"
+                >Generate Video Poster</k-button>
+        
+                <k-block-figure>
+                    <k-image-frame
+                        :cover="false"
+                        back="black"
+                        :ratio="1/1"
+                        :src="posterUrl"
+                    />
+                </k-block-figure>
+            </div>
+        </div>
+        <div class="es-external-video-container" :class="{ 'is-hidden': content.url }">
+            <div class="es-warning">
+                <p>External Video URL missing.</p>
+            </div>
         </div>
     </div>
 </template>
@@ -40,15 +48,19 @@ export default {
         },
         fieldName() {
             return this.endpoints.field.match(/\/fields\/([^/]+)/)?.[1]
+        },
+        posterUrl() {
+            return this.content.poster[0]?.url || null
         }
     },
     methods: {
-        handleUrlInput (url) {
-            this.update({
-                url
-            })
-        },
         async handleGenerateVideoPoster () {
+            const saveButtonNode = document.querySelector('.k-page-view-header [aria-label="Save"]')
+            if (saveButtonNode) {
+                saveButtonNode.click()
+                await new Promise(resolve => setTimeout(resolve, 500))
+            }
+
             let video = this.$el.querySelector('video')
 
             if (!video) {
@@ -78,19 +90,13 @@ export default {
 
             canvas.toBlob(async blob => {
                 try {
-                    const formatCurrentTime = (time) => {
-                        const seconds = Math.floor(time)
-                        const hundredths = Math.round((time % 1) * 100)
-                        const hundredthsPadded = hundredths.toString().padStart(2, '0')
-                        return `${seconds}_${hundredthsPadded}`
-                    }
-                    
-                    const posterFilename = this.id + '_' + formatCurrentTime(video.currentTime) + Date.now() + '.jpeg'
-                    
+                    const posterFilename = this.id + '_poster.jpeg'
+
                     const formData = new FormData();
                     formData.append('pageId', this.pageId)
                     formData.append('blockId', this.blockId)
                     formData.append('fieldName', this.fieldName)
+                    formData.append('videoUrl', this.content.url)
                     formData.append('posterFilename', posterFilename)
                     formData.append('posterFile', blob, posterFilename) 
                     
@@ -100,11 +106,13 @@ export default {
                     })
                     
                     if (!response.ok) throw new Error('(External Video) Upload failed - Response Status: ' + response.status)
-                    
-                    const data = await response.json()
-                    
-                    if (data.success) this.$reload()
                 
+                    const data = await response.json()
+
+                    if (data.success) {
+                        this.posterUrl = data.file.url
+                        this.$reload()    
+                    }                
                 } catch (err) {
                     console.error('(External Video) Upload failed - Error:', err)
                 } finally {
@@ -120,7 +128,7 @@ export default {
         if (video) {
             video.setAttribute('crossorigin', 'anonymous')
         }
-    },
+    }
 }
 </script>
 
@@ -137,6 +145,14 @@ export default {
 
         @container (max-width: 599px) {
             grid-template-columns: 1fr;
+        }
+    }
+
+    .es-external-video-container {
+        display: contents;
+
+        &.is-hidden {
+            display: none;
         }
     }
     
@@ -191,5 +207,13 @@ export default {
         max-width: 240px;
         width: 100%;
     }
+
+    .es-warning {
+        padding: var(--spacing-3);
+        background-color: var(--color-yellow-300);
+        color: var(--color-yellow-950);
+        border-radius: var(--button-rounded);
+    }
+
 }
 </style>

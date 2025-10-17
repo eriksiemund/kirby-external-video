@@ -24,8 +24,6 @@ Kirby::plugin('eriksiemund/external-video', [
                 }
                 
                 $blockId = get('blockId');
-                $blocksJSON = $page->{$fieldName}()->value();
-                $blocks = json_decode($blocksJSON, true);
 
                 $posterFile = $_FILES['posterFile'] ?? null;                
                 if (!$posterFile || $posterFile['error'] !== UPLOAD_ERR_OK) {
@@ -38,29 +36,45 @@ Kirby::plugin('eriksiemund/external-video', [
                 }
 
                 try {
+                    if ($existing = $page->file($posterFilename)) {
+                        $existing->delete();
+                    }
+
                     $posterFileUploaded = $page->createFile([
                         'source'   => $posterFile['tmp_name'],
                         'filename' => $posterFilename,
                         'template' => 'image'
                     ]);
 
-                    foreach ($blocks as &$block) {
-                        if ($block['id'] === $blockId) {
-                            $block['content']['poster'] = $posterFileUploaded->id();
+                    foreach ($page->{$fieldName}()->toBlocks() as $block) {
+                        $old = $block->toArray();
+                        
+                        if ($block->id() === $blockId) {
+                            $old['content']['poster'] = $posterFileUploaded->id();
+                            $old['content']['url'] = get('videoUrl');
                         }
+
+                        $new[] = new Kirby\Cms\Block($old);
                     }
 
+                    $blocksNew = new Kirby\Cms\Blocks($new ?? []);
+
                     $page->update([
-                      $fieldName => json_encode($blocks)
+                        $fieldName => $blocksNew->toArray()
                     ]);
 
                     return [
                         'success' => true,
                         'reload'  => true,
+                        'file'    => [
+                            'id'  => $posterFileUploaded->id(),
+                            'url' => $posterFileUploaded->url()
+                        ]
                     ];
+
                 } catch (Exception $e) {
                     return [
-                        'error'   => '(External Video) ' . $e->getMessage()
+                        'error' => '(External Video) ' . $e->getMessage()
                     ];
                 }
             }
