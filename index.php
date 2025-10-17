@@ -46,18 +46,79 @@ Kirby::plugin('eriksiemund/external-video', [
                         'template' => 'image'
                     ]);
 
-                    foreach ($page->{$fieldName}()->toBlocks() as $block) {
-                        $old = $block->toArray();
-                        
-                        if ($block->id() === $blockId) {
-                            $old['content']['poster'] = $posterFileUploaded->id();
-                            $old['content']['url'] = get('videoUrl');
+                    $isArrayBlocks = function ($arr): bool {
+                        if (!is_array($arr) || empty($arr)) {
+                            return false;
+                        }
+                        // only check first 5 elements for performance
+                        $entriesSample = array_slice($arr, 0, 5);
+                        foreach ($entriesSample as $entrySample) {
+                            if (!is_array($entrySample)) {
+                                return false;
+                            }
+                            if (!array_key_exists('id', $entrySample) || !array_key_exists('type', $entrySample)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    };
+
+                    $updateNestedBlocksArray = function (array $blocksArray, string $targetId, $posterId, string $videoUrl) use (&$updateNestedBlocksArray, $isArrayBlocks): array {
+                        $result = [];
+
+                        foreach ($blocksArray as $blockArray) {
+                            $newBlock = $blockArray;
+                            $content = is_array($blockArray['content'] ?? null) ? $blockArray['content'] : [];
+
+                            if (($blockArray['id'] ?? null) === $targetId) {
+                                $content = array_merge($content, [
+                                    'poster' => $posterId,
+                                    'url'    => $videoUrl
+                                ]);
+                                $newBlock['content'] = $content;
+                            }
+
+                            foreach ($content as $key => $value) {
+                                // case: value is an array that looks like blocks
+                                if ($isArrayBlocks($value)) {
+                                    $content[$key] = $updateNestedBlocksArray($value, $targetId, $posterId, $videoUrl);
+                                    $newBlock['content'] = $content;
+                                    continue;
+                                }
+
+                                // case: value is a string that may contain JSON array of blocks
+                                if (is_string($value)) {
+                                    $decoded = json_decode($value, true);
+                                    if (json_last_error() === JSON_ERROR_NONE && $isArrayBlocks($decoded)) {
+                                        $updatedNested = $updateNestedBlocksArray($decoded, $targetId, $posterId, $videoUrl);
+                                        $content[$key] = json_encode($updatedNested);
+                                        $newBlock['content'] = $content;
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            $result[] = $newBlock;
                         }
 
-                        $new[] = new Kirby\Cms\Block($old);
+                        return $result;
+                    };
+
+                    $blocksArray = $page->{$fieldName}()->toBlocks()->toArray();
+
+                    $updatedArray = $updateNestedBlocksArray(
+                        $blocksArray,
+                        $blockId,
+                        $posterFileUploaded->id(),
+                        get('videoUrl')
+                    );
+
+                    $newBlocks = [];
+                    foreach ($updatedArray as $b) {
+                        $newBlocks[] = new Kirby\Cms\Block($b);
                     }
 
-                    $blocksNew = new Kirby\Cms\Blocks($new ?? []);
+                    $blocksNew = new Kirby\Cms\Blocks($newBlocks);
 
                     $page->update([
                         $fieldName => $blocksNew->toArray()
