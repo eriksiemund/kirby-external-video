@@ -133,7 +133,7 @@ export default {
 </script>
 
 <style>
-.k-block-container {
+.k-block-container-type-external_video {
     
     .es-external-video-block {
         container-type: inline-size;
