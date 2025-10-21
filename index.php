@@ -12,7 +12,6 @@ Kirby::plugin('eriksiemund/external-video', [
             'pattern' => 'external-video/upload',
             'method' => 'POST',
             'action' => function () {
-                kirbylog('------------------------');
                 $pageId = get('pageId');
                 $page = page($pageId);
                 if (!$page)
@@ -157,7 +156,6 @@ Kirby::plugin('eriksiemund/external-video', [
                             }
 
                             // case: parent structure
-                            kirbylog('b');
                             if (is_array($value)) {
                                 $structureNew = $updateStructure($value, $segments);
                                 $data[$idx][$segment] = $structureNew;
