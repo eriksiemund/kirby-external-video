@@ -46,7 +46,8 @@ export default {
         blockId() {
             return this.id
         },
-        fieldName() {
+        fieldPath() {
+            console.log(this.endpoints.field)
             return this.endpoints.field.match(/\/fields\/([^/]+)/)?.[1]
         },
         posterUrl() {
@@ -95,10 +96,12 @@ export default {
                     const formData = new FormData();
                     formData.append('pageId', this.pageId)
                     formData.append('blockId', this.blockId)
-                    formData.append('fieldName', this.fieldName)
+                    formData.append('fieldPath', this.fieldPath)
                     formData.append('videoUrl', this.content.url)
                     formData.append('posterFilename', posterFilename)
                     formData.append('posterFile', blob, posterFilename) 
+
+                    console.log(this.fieldPath)
                     
                     const response = await fetch('/external-video/upload', {
                         method: 'POST',
@@ -111,7 +114,7 @@ export default {
 
                     if (data.success) {
                         this.posterUrl = data.file.url
-                        this.$reload()    
+                        this.$reload()
                     }                
                 } catch (err) {
                     console.error('(External Video) Upload failed - Error:', err)
