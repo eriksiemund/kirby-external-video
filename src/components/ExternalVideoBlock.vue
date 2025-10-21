@@ -50,7 +50,6 @@ export default {
             return this.id;
         },
         fieldPath() {
-            console.log(this.endpoints.field);
             return this.endpoints.field.match(/\/fields\/([^/]+)/)?.[1];
         },
         posterUrl() {
@@ -108,8 +107,6 @@ export default {
                         formData.append("videoUrl", this.content.url);
                         formData.append("posterFilename", posterFilename);
                         formData.append("posterFile", blob, posterFilename);
-
-                        console.log(this.fieldPath);
 
                         const response = await fetch("/external-video/upload", {
                             method: "POST",
